@@ -60,6 +60,9 @@ function profileNav(t){const tabs=t==='Ü40'?[['games','Spielplan']]:[['team','T
 const widgetStoreKey='tsv-bockum-widgets-2627-v1';
 let widgetCodes={};try{widgetCodes=JSON.parse(localStorage.getItem(widgetStoreKey)||'{}')||{}}catch(e){widgetCodes={}}
 const widgetKey=(t,mode)=>t+'::'+mode;
+const officialWidgets={'A1::games':'<div class="fussballde_widget" data-id="4bf38c6d-f98b-4bb4-b11d-e50b7092e8c7" data-type="team-matches" style="width: 100%"></div><script type="text/javascript" src="https://www.fussball.de/widgets.js"><\/script>'};
+Object.assign(widgetCodes,officialWidgets);
+
 const widgetEditorOpen={};const widgetConsent={};
 function widgetReload(t,mode){if(page==='Spielpläne')showMatchesHub();else teamView(t)}
 function toggleWidgetEditor(t,mode){const k=widgetKey(t,mode);widgetEditorOpen[k]=!widgetEditorOpen[k];widgetReload(t,mode)}
