@@ -8,7 +8,7 @@ android {
         applicationId 'de.tsvbockum.app'
         minSdk 24
         targetSdk 35
-        versionCode (System.getenv('TSV_VERSION_CODE') ?: '2').toInteger()
+        versionCode Integer.parseInt(System.getenv('TSV_VERSION_CODE') ?: '2')
         versionName '1.1'
     }
 
