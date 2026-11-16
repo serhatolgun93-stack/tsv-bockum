@@ -41,6 +41,7 @@ jobs:
       - name: Build signed release APK
         working-directory: android-app
         env:
+          TSV_VERSION_CODE: ${{ github.run_number + 100 }}
           TSV_KEYSTORE_PATH: ${{ runner.temp }}/tsv-bockum-release.jks
           TSV_KEYSTORE_PASSWORD: ${{ secrets.TSV_KEYSTORE_PASSWORD }}
           TSV_KEY_ALIAS: ${{ secrets.TSV_KEY_ALIAS }}
