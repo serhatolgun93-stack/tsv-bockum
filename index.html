@@ -158,4 +158,4 @@ render();
 syncPublicData();
 {const params=new URLSearchParams(location.search),hashParams=new URLSearchParams(location.hash.slice(1)),team=hashParams.get('team')||params.get('team');if(team&&teamData[team]){page='Mannschaften';openTeam(team,'team')}}
 
-</script><script>if ("serviceWorker" in navigator && location.protocol.startsWith("http")) { window.addEventListener("load",()=>navigator.serviceWorker.getRegistrations().then(rs=>rs.forEach(r=>r.unregister())).catch(console.warn)); }</script></body></html>
+</script><script>if ("serviceWorker" in navigator && location.protocol.startsWith("http")) { window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js",{scope:"./"}).catch(e=>console.warn("PWA Service Worker:",e))); }</script></body></html>
