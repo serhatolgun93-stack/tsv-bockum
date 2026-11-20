@@ -112,7 +112,31 @@ let adminPersons=[];
 async function adminLoadPersons(){try{adminPersons=await sbRequest('/rest/v1/team_personen?select=id,mannschaft_id,name,rolle,telefon,email,aktiv&order=name.asc');adminRenderPersons()}catch(e){adminMessage('Ansprechpartner konnten nicht geladen werden: '+e.message,true)}}
 function adminRenderPersons(){const select=document.getElementById('adminPersonSelect');if(!select)return;const teamId=Number(document.getElementById('adminPersonTeam').value);const list=adminPersons.filter(p=>p.mannschaft_id===teamId);select.innerHTML=list.map(p=>'<option value="'+p.id+'">'+esc(p.name)+' ('+esc(p.rolle)+')'+(p.aktiv?'':' – inaktiv')+'</option>').join('')+'<option value="new">+ Neuen Ansprechpartner hinzufügen</option>';select.value=list.length?String(list[0].id):'new';const overview=document.getElementById('adminPersonOverview');if(overview)overview.innerHTML=teamId?(list.length?'<strong>Vorhandene Ansprechpartner ('+list.length+'):</strong><ul>'+list.map(p=>'<li>'+esc(p.name)+' – '+esc(p.rolle)+(p.aktiv?'':' (inaktiv)')+'</li>').join('')+'</ul>':'Für diese Mannschaft sind keine Ansprechpartner hinterlegt.'):'Bitte zuerst eine Mannschaft auswählen.';adminSelectPerson()}
 function adminSelectPerson(){const id=document.getElementById('adminPersonSelect').value;const p=adminPersons.find(x=>String(x.id)===id);const form=document.getElementById('adminPersonForm');form.elements.id.value=p?.id||'';form.elements.name.value=p?.name||'';form.elements.rolle.value=p?.rolle||'Trainer';form.elements.telefon.value=p?.telefon||'';form.elements.email.value=p?.email||'';form.elements.aktiv.checked=p?.aktiv??true;form.hidden=!Number(document.getElementById('adminPersonTeam').value)}
-async function adminSavePerson(ev){ev.preventDefault();if(!adminVerified)return;const form=ev.currentTarget,teamId=Number(document.getElementById('adminPersonTeam').value),id=Number(form.elements.id.value);if(!teamId||!adminTeams.some(t=>t.id===teamId))return;const data={mannschaft_id:teamId,name:form.elements.name.value.trim(),rolle:form.elements.rolle.value,telefon:form.elements.telefon.value.trim()||null,email:form.elements.email.value.trim()||null,aktiv:form.elements.aktiv.checked};if(!data.name){adminMessage('Bitte einen Namen eingeben.',true);return}const button=form.querySelector('button[type=submit]');button.disabled=true;adminMessage('Ansprechpartner wird gespeichert …');try{const path=id?'/rest/v1/team_personen?id=eq.'+id:'/rest/v1/team_personen';const result=await sbRequest(path,{method:id?'PATCH':'POST',headers:{Prefer:'return=representation'},body:JSON.stringify(data)});if(!Array.isArray(result)||result.length!==1)throw Error('Speichern konnte nicht bestätigt werden');await adminLoadPersons();document.getElementById('adminPersonSelect').value=String(result[0].id);adminSelectPerson();adminLoadStats();adminMessage('Ansprechpartner erfolgreich gespeichert. Öffentliche Teamprofile werden noch nicht aus Supabase geladen.')}catch(e){adminMessage('Speichern fehlgeschlagen: '+e.message,true)}finally{button.disabled=false}}
+async function adminSavePerson(ev){ev.preventDefault();if(!adminVerified)return;const form=ev.currentTarget,teamId=Number(document.getElementById('adminPersonTeam').value),id=Number(form.elements.id.value);if(!teamId||!adminTeams.some(t=>t.id===teamId))return;const data={mannschaft_id:teamId,name:form.elements.name.value.trim(),rolle:form.elements.rolle.value,telefon:form.elements.telefon.value.trim()||null,email:form.elements.email.value.trim()||null,aktiv:form.elements.aktiv.checked};if(!data.name){adminMessage('Bitte einen Namen eingeben.',true);return}
+
+if (id) {
+  const original = adminPersons.find(p => Number(p.id) === id);
+
+  if (original && (
+    original.name !== data.name ||
+    original.rolle !== data.rolle ||
+    (original.telefon || null) !== data.telefon ||
+    (original.email || null) !== data.email ||
+    original.aktiv !== data.aktiv
+  )) {
+    const bestaetigt = confirm(
+      'Ansprechpartner wirklich ändern?\n\n' +
+      'Name: ' + original.name + ' → ' + data.name + '\n' +
+      'Rolle: ' + original.rolle + ' → ' + data.rolle + '\n' +
+      'Status: ' + (original.aktiv ? 'Aktiv' : 'Inaktiv') +
+      ' → ' + (data.aktiv ? 'Aktiv' : 'Inaktiv') +
+      '\n\nÄnderungen speichern?'
+    );
+
+    if (!bestaetigt) return;
+  }
+}
+const button=form.querySelector('button[type=submit]');button.disabled=true;adminMessage('Ansprechpartner wird gespeichert …');try{const path=id?'/rest/v1/team_personen?id=eq.'+id:'/rest/v1/team_personen';const result=await sbRequest(path,{method:id?'PATCH':'POST',headers:{Prefer:'return=representation'},body:JSON.stringify(data)});if(!Array.isArray(result)||result.length!==1)throw Error('Speichern konnte nicht bestätigt werden');await adminLoadPersons();document.getElementById('adminPersonSelect').value=String(result[0].id);adminSelectPerson();adminLoadStats();adminMessage('Ansprechpartner erfolgreich gespeichert. Öffentliche Teamprofile werden noch nicht aus Supabase geladen.')}catch(e){adminMessage('Speichern fehlgeschlagen: '+e.message,true)}finally{button.disabled=false}}
 let adminSessions=[];
 const adminDays=['','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag','Sonntag'];
 async function adminLoadSessions(){try{adminSessions=await sbRequest('/rest/v1/trainingseinheiten?select=id,mannschaft_id,wochentag,beginn,ende,trainingsplatz&order=wochentag.asc,beginn.asc');adminRenderSessions()}catch(e){adminMessage('Trainingszeiten konnten nicht geladen werden: '+e.message,true)}}
